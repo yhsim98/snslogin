@@ -46,9 +46,14 @@ public class CustomOAuth2UserService {
         }
     }
 
+    // 카카오에서 인가 코드를 받아오는 메서드
     private KakaoOauth2Token getOauthToken(String code){
+        // 서버에서 RESTful 한 요청을 보낼 때 사용한느 web 요청 인터페이스이다
+        // webclient 를 사용하는 것을 권장한다. resttamplate은 이제 deprecated 되어 쓰이지 않는다...
         RestTemplate restTemplate = new RestTemplate();
 
+        // 인가 코드를 받아오기 위해 필요한 http header와 body 설정이다.
+        // https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
@@ -60,6 +65,7 @@ public class CustomOAuth2UserService {
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
 
+        // resttemplate을 통해 post요청을 보낸다
         ResponseEntity<String> response = restTemplate.exchange(
                 "https://kauth.kakao.com/oauth/token",
                 HttpMethod.POST,
@@ -67,6 +73,7 @@ public class CustomOAuth2UserService {
                 String.class
         );
 
+        // 받아온 http response 의 body를 객체로 매핑해준다
         ObjectMapper objectMapper = new ObjectMapper();
         KakaoOauth2Token oauthToken = null;
         try {
@@ -80,6 +87,8 @@ public class CustomOAuth2UserService {
         return oauthToken;
     }
 
+    // kakao에 rest 요청을 보내 유저의 정보를 받아온다. access token 이 필요하다.
+    // https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#req-user-info
     private User getUserInfo(KakaoOauth2Token kakaoOauth2Token){
         RestTemplate restTemplate = new RestTemplate();
 
